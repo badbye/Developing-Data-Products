@@ -1,0 +1,109 @@
+---
+title       : Developing Data Products
+subtitle    : my shinyapp
+author      : yaleidu
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+## Ideas of my app
+### Problem
+```{r echo=FALSE, message=FALSE}
+require(knitr)
+opts_chunk$set(message = FALSE, fig.align = 'center', warning = FALSE, comment = NA)
+```
+
+There is a classification algorithm named `KNN(k-Nearest Neighbor algorithm)`, which use one's 
+neighbours to predict an unkown sample.
+
+This algorithm is quite simple and useful, the only problem is use how many neighbours to predict?
+
+--- 
+## Ideas of my app
+### Solution
+
+Derictly, we can use a bunch of parameters to build a model, and choose the best one.
+
+The best means the one has smallest misclassification rate.
+
+--- 
+## Ideas of my app
+### Dataset
+Here I use the famous data set `iris` in R, which has five variables.
+```{r}
+head(iris)
+```
+
+We will use the four predictors `r colnames(iris)[1:4]` to predict `r colnames(iris)[5]`
+
+--- 
+## Ideas of my app
+### Result
+
+```{r echo=FALSE}
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+```{r echo=FALSE, message=FALSE, fig.align='center', fig.height=7, fig.width=12}
+library(ggplot2)
+library(class)
+group = iris$Species
+train = iris[, 1:4]
+out_plot = function(x){
+    predictSpecies = knn(train, train, group, k = x)
+    iris2 = cbind(iris, predictSpecies)
+    out = ggplot(data=iris2, aes(Sepal.Length, Sepal.Width)) + 
+        geom_point(aes(color=predictSpecies, shape=predictSpecies), size=3) +
+        geom_point(data=subset(iris2, predictSpecies!=Species), 
+                   aes(Sepal.Length, Sepal.Width), 
+                   shape=5, size=5, col='red')+
+        ggtitle(paste0('k=', x))
+}
+
+multiplot(out_plot(2), 
+          out_plot(5), 
+          out_plot(10), 
+          out_plot(20), cols=2)
+```
+
+
+
+
